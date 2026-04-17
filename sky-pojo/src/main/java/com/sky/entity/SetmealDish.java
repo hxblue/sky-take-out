@@ -35,4 +35,7 @@ public class SetmealDish implements Serializable {
 
     //份数
     private Integer copies;
+
+
+
 }
