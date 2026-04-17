@@ -78,8 +78,8 @@ public class DishServiceImpl implements DishService {
     }
 
     /**
-     * 根据id查询菜品
-     * @param id
+     * 批量删除菜品
+     * @param ids
      * @return
      */
     @Transactional
@@ -105,11 +105,6 @@ public class DishServiceImpl implements DishService {
             dishMapper.deleteByIds(ids);
             dishFlavorMapper.deleteByDishIds(ids);
         }
-
-
-
-
-
 
     }
 
