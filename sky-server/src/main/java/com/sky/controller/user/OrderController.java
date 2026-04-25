@@ -1,9 +1,11 @@
 package com.sky.controller.user;
 
+import com.sky.dto.OrdersPaymentDTO;
 import com.sky.dto.OrdersSubmitDTO;
 import com.sky.result.PageResult;
 import com.sky.result.Result;
 import com.sky.service.OrderService;
+import com.sky.vo.OrderPaymentVO;
 import com.sky.vo.OrderSubmitVO;
 import com.sky.vo.OrderVO;
 import lombok.extern.slf4j.Slf4j;
@@ -76,6 +78,33 @@ public class OrderController {
     @PostMapping("/repetition/{id}")
     public Result repetition(@PathVariable Long id) {
         orderService.repetition(id);
+        return Result.success();
+    }
+
+    /**
+     * 订单支付
+     *
+     * @param ordersPaymentDTO
+     * @return
+     */
+    @PutMapping("/payment")
+    public Result<OrderPaymentVO> payment(@RequestBody OrdersPaymentDTO ordersPaymentDTO) throws Exception {
+        log.info("订单支付：{}", ordersPaymentDTO);
+        OrderPaymentVO orderPaymentVO = orderService.payment(ordersPaymentDTO);
+        return Result.success(orderPaymentVO);
+    }
+
+    /**
+     * 模拟支付成功回调（仅用于测试环境，没有微信支付商户号时使用）
+     * 前端在模拟支付后，调用此接口将订单状态改为已支付
+     *
+     * @param orderNumber
+     * @return
+     */
+    @PostMapping("/paySuccess/{orderNumber}")
+    public Result paySuccess(@PathVariable String orderNumber) {
+        log.info("【模拟支付回调】订单号：{}", orderNumber);
+        orderService.paySuccess(orderNumber);
         return Result.success();
     }
 

@@ -14,6 +14,7 @@ import org.apache.http.entity.ContentType;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.util.EntityUtils;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -33,6 +34,7 @@ import java.util.List;
  * 微信支付工具类
  */
 @Component
+@Slf4j
 public class WeChatPayUtil {
 
     //微信支付下单接口地址
@@ -164,6 +166,11 @@ public class WeChatPayUtil {
      * @return
      */
     public JSONObject pay(String orderNum, BigDecimal total, String description, String openid) throws Exception {
+        // 如果启用了模拟支付，直接返回模拟数据
+        if (Boolean.TRUE.equals(weChatProperties.getMockEnabled())) {
+            return mockPay(orderNum);
+        }
+
         //统一下单，生成预支付交易单
         String bodyAsString = jsapi(orderNum, total, description, openid);
         //解析返回结果
@@ -203,6 +210,31 @@ public class WeChatPayUtil {
             return jo;
         }
         return jsonObject;
+    }
+
+    /**
+     * 模拟支付 - 用于没有微信商户号的测试环境
+     *
+     * @param orderNum 商户订单号
+     * @return
+     */
+    private JSONObject mockPay(String orderNum) {
+        log.info("【模拟支付】订单号：{}，跳过真实微信支付", orderNum);
+
+        String timeStamp = String.valueOf(System.currentTimeMillis() / 1000);
+        String nonceStr = RandomStringUtils.randomNumeric(32);
+
+        // 构造与真实微信支付一致的返回数据格式
+        JSONObject jo = new JSONObject();
+        jo.put("timeStamp", timeStamp);
+        jo.put("nonceStr", nonceStr);
+        jo.put("package", "prepay_id=mock_" + orderNum);
+        jo.put("signType", "RSA");
+        jo.put("paySign", "mock_sign");
+        // 添加标记，前端可通过此标记识别为模拟支付
+        jo.put("mock", true);
+
+        return jo;
     }
 
     /**
